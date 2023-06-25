@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 
-openai.api_key = st.secrets.Open_AI_API.openai_api_key
+openai.api_key = st.secrets.openai_api_key
 
 system_prompt = """
 あなたは優秀なプログラミング講師です。
