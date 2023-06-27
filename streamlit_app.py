@@ -29,14 +29,8 @@ if "quiz_msg" not in st.session_state:
 
 
 
-# チャットボットとやりとりする関数
-def chat():
-    messages = st.session_state["plain_msg"]
-    message = {"role": "user", "content": st.session_state["user_input"]}
-    messages.append(message)
-    messages = api_call(messages)
-    st.session_state[user_input] = ""
 
+# チャットボットとやりとりする関数
 def api_call(messages):
 
     response = openai.ChatCompletion.create(
@@ -48,6 +42,12 @@ def api_call(messages):
     messages.append(bot_message)
     return messages
 
+def chat():
+    messages = st.session_state["plain_msg"]
+    message = {"role": "user", "content": st.session_state["user_input"]}
+    messages.append(message)
+    messages = api_call(messages)
+    st.session_state[user_input] = ""
 
 # 問題作成の関数
 def create_exercise(difficulty, custom_exercise):
@@ -64,10 +64,15 @@ def create_exercise(difficulty, custom_exercise):
     
     
 # メッセージの表示関数
-def display_message_history(message_list):
+def display_message_history(message_list, icon=True, show_user=True):
     if message_list:
         for message in reversed(message_list[1:]):
-            speaker = "🙂" if message["role"] != "assistant" else "🤖"
+            if message["role"] == "user" and show_user == False:
+                continue
+            if icon:
+                speaker = "😊" if message["role"] != "assistant" else "💻"
+            else:
+                speaker = "" 
             st.write(speaker + ": " + message["content"])
 
 
@@ -90,9 +95,9 @@ if st.button("練習問題を作成"):
     create_exercise(difficulty, custom_exercise)
 
 # 問題の表示
-display_message_history(st.session_state["quiz_msg"])
+display_message_history(st.session_state["quiz_msg"], icon=False, show_user=False)
 
-user_input = st.text_input("メッセージを入力してください。", key="user_input", on_change=chat)
+user_input = st.text_input("Pythonに関する質問なら何でもお任せください。", key="user_input", on_change=chat)
 
 # メッセージ履歴の表示
 display_message_history(st.session_state["plain_msg"])
