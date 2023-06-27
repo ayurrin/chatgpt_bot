@@ -1,9 +1,6 @@
 import streamlit as st
 import openai
 
-# Streamlit Community Cloudの「Secrets」からOpenAI API keyを取得
-openai.api_key = st.secrets.OpenAIAPI.openai_api_key
-
 
 prompt = """
 あなたは優秀なPythonエンジニアで学習者にPythonを教える講師です。
@@ -28,8 +25,6 @@ if "quiz_msg" not in st.session_state:
     ]
 
 
-
-
 # チャットボットとやりとりする関数
 def api_call(messages):
 
@@ -47,7 +42,7 @@ def chat():
     message = {"role": "user", "content": st.session_state["user_input"]}
     messages.append(message)
     messages = api_call(messages)
-    st.session_state[user_input] = ""
+    st.session_state["user_input"] = ""
 
 # 問題作成の関数
 def create_exercise(difficulty, custom_exercise):
@@ -64,22 +59,22 @@ def create_exercise(difficulty, custom_exercise):
     
     
 # メッセージの表示関数
-def display_message_history(message_list, icon=True, show_user=True):
+def display_message_history(message_list,show_speaker=True):
     if message_list:
         for message in reversed(message_list[1:]):
-            if message["role"] == "user" and show_user == False:
-                continue
-            if icon:
-                speaker = "😊" if message["role"] != "assistant" else "💻"
-            else:
-                speaker = "" 
+            speaker = "😀" if message["role"] != "assistant" else "💻"
             st.write(speaker + ": " + message["content"])
 
-
+def set_api():
+    openai.api_key = st.session_state["api_key"]
 
 # UIの構築
 st.title("Python学習への道")
 st.write("Pythonに関してわからないことがあれば聞いてください。一緒にPythonを勉強していきましょう！")
+
+#API入力
+api_key = st.text_input("OpenAI APIキーを入力してください", on_change=set_api, key='api_key')
+
 
 # 「練習問題を作成」セクション
 st.header("練習問題を作成")
@@ -88,16 +83,16 @@ st.header("練習問題を作成")
 difficulty = st.selectbox("難易度を選択してください", ["初心者向け", "中級者向け", "上級者向け"])
 
 # フリーテキスト入力欄
-custom_exercise = st.text_area("自分で問題を入力する場合はこちらに記述してください")
+custom_exercise = st.text_area("自分で問題を入力する場合はこちらに記述してください", key="quiz_input")
 
 # 「練習問題を作成」ボタンを追加
 if st.button("練習問題を作成"):
     create_exercise(difficulty, custom_exercise)
 
 # 問題の表示
-display_message_history(st.session_state["quiz_msg"], icon=False, show_user=False)
+display_message_history(st.session_state["quiz_msg"])
 
-user_input = st.text_input("Pythonに関する質問なら何でもお任せください。", key="user_input", on_change=chat)
+user_input = st.text_input("Python学習でお困りのことがあればぜひ相談してください。", key="user_input", on_change=chat)
 
 # メッセージ履歴の表示
 display_message_history(st.session_state["plain_msg"])
