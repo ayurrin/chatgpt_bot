@@ -18,17 +18,23 @@ if "plain_msg" not in st.session_state:
         {"role": "system", "content": prompt}
     ]
 
-question_prompt = """
+quiz_prompt = """
 あなたは優秀なPythonエンジニアです。
 Pythonプログラミング上達のために、学習者のレベルに合わせて練習問題の作成ととその回答、解説の作成を行います。
 """
+if "quiz_msg" not in st.session_state:
+    st.session_state["quiz_msg"] = [
+        {"role": "system", "content": quiz_prompt}
+    ]
+
+
 
 # チャットボットとやりとりする関数
 def chat():
     messages = st.session_state["plain_msg"]
     message = {"role": "user", "content": st.session_state["user_input"]}
     messages.append(message)
-    messages = api_call(messages, "user_input")
+    messages = api_call(messages)
     st.session_state[user_input] = ""
 
 def api_call(messages):
@@ -51,12 +57,11 @@ def create_exercise(difficulty, custom_exercise):
     if custom_exercise:
         # フリーテキスト入力による問題作成の場合
         exercise_prompt = custom_exercise
-    messages = [
-        {"role": "system", "content": question_prompt},
-        {"role": "user", "content": exercise_prompt}
-    ]
-    messages = api_call(messages, "user_input")
-    st.session_state["quiz_msg"] = messages
+    messages = st.session_state["plain_msg"]
+    message = {"role": "user", "content": exercise_prompt}
+    messages.append(message)
+    messages = api_call(messages)
+    
     
 # メッセージの表示関数
 def display_message_history(message_list):
